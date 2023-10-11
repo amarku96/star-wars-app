@@ -45,21 +45,7 @@ const Characters = () => {
         setError(err);
       });
   };
-  // const fetchDataOnClick = () => {
-  //   setIsLoading(true);
-  //   setError(null);
 
-  //   axios
-  //     .get("https://swapi.dev/api/planets/1/")
-  //     .then((response) => {
-  //       setHomeWorld(response.data);
-  //       setIsLoading(false);
-  //     })
-  //     .catch((err) => {
-  //       setError(err);
-  //       setIsLoading(false);
-  //     });
-  // };
   console.log(selectedCharacter, homeworld);
   if (isloading) {
     return <div>Loading...</div>;
