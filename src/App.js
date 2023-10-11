@@ -1,21 +1,15 @@
 import "./App.css";
+import Characters from "./components/Characters";
+import Search from "./components/Search";
 
 function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        <h1>STAR WARS</h1>
       </header>
+      <Search></Search>
+      <Characters></Characters>
     </div>
   );
 }
