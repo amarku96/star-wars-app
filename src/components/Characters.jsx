@@ -11,18 +11,42 @@ const Characters = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedCharacter, setSelectedCharacter] = useState(null);
-  const [homeworld, setHomeWorld] = useState([]);
 
   const charactersPerPage = 10;
   const getData = async (currentPage) => {
     try {
-      const characterResponse = await axios.get(
+      const response = await axios.get(
         `https://swapi.dev/api/people/?page=${currentPage}`
       );
-      const characterData = characterResponse.data;
-      setData(characterData.results);
+      const characters = response.data.results;
+
+      // Fetch the homeworld and species data for each character
+      const characterPromises = characters.map(async (character) => {
+        const homeworldResponse = await axios.get(character.homeworld);
+        const homeworldData = homeworldResponse.data;
+
+        // Check if there are species URLs available
+        if (character.species.length > 0) {
+          // Fetch the species data
+          const speciesResponse = await axios.get(character.species[0]);
+          const speciesData = speciesResponse.data;
+          return {
+            ...character,
+            homeworld: homeworldData,
+            species: speciesData,
+          };
+        } else {
+          // if no species data
+          return { ...character, homeworld: homeworldData, species: {} };
+        }
+      });
+
+      // Wait for all character data requests to complete
+      const charactersWithData = await Promise.all(characterPromises);
+
+      setData(charactersWithData);
       setisLoading(false);
-      setTotalPages(Math.ceil(characterData.count / charactersPerPage));
+      setTotalPages(Math.ceil(response.data.count / charactersPerPage));
     } catch (err) {
       setError(err);
       setisLoading(false);
@@ -35,18 +59,9 @@ const Characters = () => {
 
   const handleCardClick = (character) => {
     setSelectedCharacter(character);
-    console.log("c", character);
-    axios
-      .get(character.homeworld)
-      .then((response) => {
-        setHomeWorld(response.data);
-      })
-      .catch((err) => {
-        setError(err);
-      });
   };
 
-  console.log(selectedCharacter, homeworld);
+  console.log("selectedCharacter", totalPages);
   if (isloading) {
     return <div>Loading...</div>;
   }
@@ -84,10 +99,10 @@ const Characters = () => {
           <p>Number of Films: {selectedCharacter.films.length}</p>
           <p>Birth Year: {selectedCharacter.birth_year}</p>
           <h3>Homeworld Information:</h3>
-          <p>Name:{homeworld.name} </p>
-          <p>Terrain:{homeworld.terrain} </p>
-          <p>Climate:{homeworld.climate}</p>
-          <p>Residents:{homeworld.residents.length} </p>
+          <p>Name:{selectedCharacter.homeworld.name} </p>
+          <p>Terrain:{selectedCharacter.homeworld.terrain} </p>
+          <p>Climate:{selectedCharacter.homeworld.climate}</p>
+          <p>Residents:{selectedCharacter.homeworld.residents?.length} </p>
         </CharacterModal>
       )}
     </div>
