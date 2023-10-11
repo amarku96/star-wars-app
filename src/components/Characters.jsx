@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Pagination from "./Pagiantion";
+import "../../src/App.css";
+import CharacterModal from "./Modals/CharacterModal";
 
 const Characters = () => {
   const [data, setData] = useState([]);
@@ -8,16 +10,19 @@ const Characters = () => {
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const charactersPerPage = 10;
+  const [selectedCharacter, setSelectedCharacter] = useState(null);
+  const [homeworld, setHomeWorld] = useState([]);
 
+  const charactersPerPage = 10;
   const getData = async (currentPage) => {
     try {
-      const response = await axios.get(
+      const characterResponse = await axios.get(
         `https://swapi.dev/api/people/?page=${currentPage}`
       );
-      setData(response.data.results);
+      const characterData = characterResponse.data;
+      setData(characterData.results);
       setisLoading(false);
-      setTotalPages(Math.ceil(response.data.count / charactersPerPage));
+      setTotalPages(Math.ceil(characterData.count / charactersPerPage));
     } catch (err) {
       setError(err);
       setisLoading(false);
@@ -27,8 +32,21 @@ const Characters = () => {
   useEffect(() => {
     getData(currentPage);
   }, [currentPage]);
-  console.log(totalPages, data);
 
+  const handleCardClick = (character) => {
+    setSelectedCharacter(character);
+    console.log("c", character);
+    axios
+      .get(character.homeworld)
+      .then((response) => {
+        setHomeWorld(response.data);
+      })
+      .catch((err) => {
+        setError(err);
+      });
+  };
+
+  console.log(selectedCharacter, homeworld);
   if (isloading) {
     return <div>Loading...</div>;
   }
@@ -40,16 +58,38 @@ const Characters = () => {
   return (
     <div>
       <h1>Star Wars Characters</h1>
-      <ul>
+
+      <div class="grid-container">
         {data.map((character) => (
-          <li key={character.name}>{character.name}</li>
+          <div
+            key={character.name}
+            class="grid-item"
+            onClick={() => handleCardClick(character)}
+          >
+            {character.name}
+          </div>
         ))}
-      </ul>
+      </div>
       <Pagination
         totalPages={totalPages}
         setCurrentPage={setCurrentPage}
         currentPage={currentPage}
       ></Pagination>
+      {selectedCharacter && (
+        <CharacterModal onClose={() => setSelectedCharacter(null)}>
+          <h2>{selectedCharacter.name}</h2>
+          <p>Height: {selectedCharacter.height} meters</p>
+          <p>Mass: {selectedCharacter.mass} kg</p>
+          <p>Date Added: {selectedCharacter.created}</p>
+          <p>Number of Films: {selectedCharacter.films.length}</p>
+          <p>Birth Year: {selectedCharacter.birth_year}</p>
+          <h3>Homeworld Information:</h3>
+          <p>Name:{homeworld.name} </p>
+          <p>Terrain:{homeworld.terrain} </p>
+          <p>Climate:{homeworld.climate}</p>
+          <p>Residents:{homeworld.residents.length} </p>
+        </CharacterModal>
+      )}
     </div>
   );
 };
