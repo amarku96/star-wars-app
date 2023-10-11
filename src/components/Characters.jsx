@@ -15,24 +15,38 @@ const Characters = () => {
   const charactersPerPage = 10;
   const getData = async (currentPage) => {
     try {
-      const characterResponse = await axios.get(
+      const response = await axios.get(
         `https://swapi.dev/api/people/?page=${currentPage}`
       );
-      const characters = characterResponse.data.results;
+      const characters = response.data.results;
 
-      // Fetch the homeworld data for each character
+      // Fetch the homeworld and species data for each character
       const characterPromises = characters.map(async (character) => {
         const homeworldResponse = await axios.get(character.homeworld);
         const homeworldData = homeworldResponse.data;
-        return { ...character, homeworld: homeworldData };
+
+        // Check if there are species URLs available
+        if (character.species.length > 0) {
+          // Fetch the species data
+          const speciesResponse = await axios.get(character.species[0]);
+          const speciesData = speciesResponse.data;
+          return {
+            ...character,
+            homeworld: homeworldData,
+            species: speciesData,
+          };
+        } else {
+          // if no species data
+          return { ...character, homeworld: homeworldData, species: {} };
+        }
       });
 
-      // Wait for all homeworld requests to complete
-      const charactersWithHomeworld = await Promise.all(characterPromises);
+      // Wait for all character data requests to complete
+      const charactersWithData = await Promise.all(characterPromises);
 
-      setData(charactersWithHomeworld);
+      setData(charactersWithData);
       setisLoading(false);
-      setTotalPages(Math.ceil(characters.count / charactersPerPage));
+      setTotalPages(Math.ceil(response.data.count / charactersPerPage));
     } catch (err) {
       setError(err);
       setisLoading(false);
@@ -47,7 +61,7 @@ const Characters = () => {
     setSelectedCharacter(character);
   };
 
-  console.log("selectedCharacter", data);
+  console.log("selectedCharacter", totalPages);
   if (isloading) {
     return <div>Loading...</div>;
   }
