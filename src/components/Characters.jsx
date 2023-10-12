@@ -11,6 +11,7 @@ const Characters = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedCharacter, setSelectedCharacter] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const charactersPerPage = 10;
   const getData = async (currentPage) => {
@@ -57,11 +58,23 @@ const Characters = () => {
     getData(currentPage);
   }, [currentPage]);
 
+  //Handle Modal
   const handleCardClick = (character) => {
     setSelectedCharacter(character);
   };
 
-  console.log("selectedCharacter", totalPages);
+  //Handle Search
+  function searchCharacters(dataa, searchText) {
+    return dataa.filter((character) =>
+      character.name.toLowerCase().includes(searchText.toLowerCase())
+    );
+  }
+
+  const searchResults = searchCharacters(data, searchQuery);
+
+  console.log(searchResults);
+
+  // if is loading display this until data is shown
   if (isloading) {
     return <div>Loading...</div>;
   }
@@ -73,12 +86,17 @@ const Characters = () => {
   return (
     <div>
       <h1>Star Wars Characters</h1>
-
-      <div class="grid-container">
-        {data.map((character) => (
+      <input
+        type="text"
+        placeholder="Search by character name..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
+      <div className="grid-container">
+        {searchResults.map((character) => (
           <div
             key={character.name}
-            class="grid-item"
+            className="grid-item"
             onClick={() => handleCardClick(character)}
           >
             {character.name}
