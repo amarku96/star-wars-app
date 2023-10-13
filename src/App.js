@@ -1,16 +1,26 @@
 import "./App.css";
 import Characters from "./components/Characters";
-import Search from "./components/Search";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: Infinity,
+      cacheTime: Infinity,
+    },
+  },
+});
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>STAR WARS</h1>
-      </header>
-      <Search></Search>
-      <Characters></Characters>
-    </div>
+    <QueryClientProvider client={queryClient}>
+      <div className="App">
+        <header className="App-header">
+          <h1>STAR WARS</h1>
+        </header>
+
+        <Characters></Characters>
+      </div>
+    </QueryClientProvider>
   );
 }
 
