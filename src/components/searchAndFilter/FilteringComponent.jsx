@@ -21,7 +21,6 @@ function FilteringComponent({
       </div>
       <div className="filter-options">
         <select value={filterType} onChange={onFilterTypeChange}>
-          <option value="name">Name</option>
           <option value="homeworld">Homeworld</option>
           {/* <option value="film">Film</option> */}
           <option value="species">Species</option>

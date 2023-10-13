@@ -1,11 +1,15 @@
 import React, { useState } from "react";
-import axios from "axios";
-import Pagination from "./Pagiantion";
+// import axios from "axios";
+import Pagination from "./Pagination/Pagiantion";
 import "../../src/App.css";
 import CharacterModal from "./Modals/CharacterModal";
-import { useQuery } from "@tanstack/react-query";
-import FilterCharacters from "./searchAndFilter/FilterCharacters";
-import FilteringComponent from "./searchAndFilter/FilteringComponent";
+// import { useQuery } from "@tanstack/react-query";
+import FilterCharacters from "./SearchAndFilter/FilterCharacters";
+import FilteringComponent from "./SearchAndFilter/FilteringComponent";
+import LoadingSpinner from "./LoadingSpinner/LoadingSpinner";
+import { useCharacterData } from "../data-fetch/useCharacterData";
+import { useHomeworldData } from "../data-fetch/useHomeworldData";
+import { useSpeciesData } from "../data-fetch/useSpeciesData";
 
 const Characters = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -19,62 +23,21 @@ const Characters = () => {
     isLoading: loadingCharacters,
     error: charactersError,
     data: characterData,
-  } = useQuery(["characters", currentPage], () =>
-    axios
-      .get(`https://swapi.dev/api/people/?page=${currentPage}`)
-      .then((res) => res.data)
-  );
+  } = useCharacterData(currentPage);
 
   const {
     isLoading: loadingHomeworlds,
     error: errorHomeworlds,
     data: homeworldData,
-  } = useQuery(
-    ["homeworlds"],
-    () => {
-      if (characterData && characterData.results) {
-        const characterPromises = characterData.results.map((char) =>
-          axios.get(char.homeworld).then((res) => res.data)
-        );
+  } = useHomeworldData(characterData);
 
-        return Promise.all(characterPromises);
-      }
-      return [];
-    },
-    {
-      enabled: !!characterData, // Only fetch homeworldData if characterData is available
-    }
-  );
-  const {
-    // isLoading: loadingSpecies,
-    // error: errorSpecies,
-    data: speciesData,
-  } = useQuery(
-    ["species", characterData],
-    () => {
-      if (characterData && characterData.results) {
-        const characterPromises = characterData.results.map((char) => {
-          console.log(char.species[0]);
-          if (char.species.length > 0) {
-            return axios.get(char?.species[0]).then((res) => res.data);
-          }
-          // If no species, return an empty object
-          return {};
-        });
-        return Promise.all(characterPromises);
-      }
-      return [];
-    },
-    {
-      enabled: !!characterData, // Only fetch homeworldData if characterData is available
-    }
-  );
+  const { data: speciesData } = useSpeciesData(characterData);
 
-  if (loadingCharacters) return "Loading Characters...";
+  if (loadingCharacters) return <LoadingSpinner />;
   if (charactersError)
     return "An error has occurred: " + charactersError.message;
 
-  if (loadingHomeworlds) return "Loading Homeworlds...";
+  if (loadingHomeworlds) return <LoadingSpinner />;
   if (errorHomeworlds)
     return "An error has occurred: " + errorHomeworlds.message;
 

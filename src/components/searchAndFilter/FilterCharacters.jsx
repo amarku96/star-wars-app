@@ -21,12 +21,12 @@ function FilterCharacters({
         //     film.toLowerCase().includes(filterValue.toLowerCase())
         //   );
         case "species":
-          if (character.species) {
-            return false;
-          } else {
+          if (character.species && character.species.name) {
             return character.species.name
               .toLowerCase()
               .includes(filterValue.toLowerCase());
+          } else {
+            return false;
           }
         default:
           return true;
@@ -45,7 +45,7 @@ function FilterCharacters({
   const searchFilteredCharacters = filteredCharacters.filter((character) =>
     character.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
+  console.log(searchFilteredCharacters);
   return (
     <div className="grid-container">
       {searchFilteredCharacters.map((character) => (
@@ -53,6 +53,9 @@ function FilterCharacters({
           key={character.name}
           className="grid-item"
           onClick={() => onCardClick(character)}
+          style={{
+            backgroundColor: character.species.skin_colors || "lightgray",
+          }}
         >
           {character.name}
         </div>
