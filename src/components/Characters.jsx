@@ -1,84 +1,113 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import Pagination from "./Pagiantion";
 import "../../src/App.css";
 import CharacterModal from "./Modals/CharacterModal";
+import { useQuery } from "@tanstack/react-query";
 
 const Characters = () => {
-  const [data, setData] = useState([]);
-  const [isloading, setisLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [selectedCharacter, setSelectedCharacter] = useState(null);
-
+  const [searchQuery, setSearchQuery] = useState("");
   const charactersPerPage = 10;
-  const getData = async (currentPage) => {
-    try {
-      const response = await axios.get(
-        `https://swapi.dev/api/people/?page=${currentPage}`
-      );
-      const characters = response.data.results;
 
-      // Fetch the homeworld and species data for each character
-      const characterPromises = characters.map(async (character) => {
-        const homeworldResponse = await axios.get(character.homeworld);
-        const homeworldData = homeworldResponse.data;
+  const {
+    isLoading: loadingCharacters,
+    error: charactersError,
+    data: characterData,
+  } = useQuery(["characters", currentPage], () =>
+    axios
+      .get(`https://swapi.dev/api/people/?page=${currentPage}`)
+      .then((res) => res.data)
+  );
 
-        // Check if there are species URLs available
-        if (character.species.length > 0) {
-          // Fetch the species data
-          const speciesResponse = await axios.get(character.species[0]);
-          const speciesData = speciesResponse.data;
-          return {
-            ...character,
-            homeworld: homeworldData,
-            species: speciesData,
-          };
-        } else {
-          // if no species data
-          return { ...character, homeworld: homeworldData, species: {} };
-        }
-      });
+  const {
+    isLoading: loadingHomeworlds,
+    error: errorHomeworlds,
+    data: homeworldData,
+  } = useQuery(
+    ["homeworlds"],
+    () => {
+      if (characterData && characterData.results) {
+        const characterPromises = characterData.results.map((char) =>
+          axios.get(char.homeworld).then((res) => res.data)
+        );
 
-      // Wait for all character data requests to complete
-      const charactersWithData = await Promise.all(characterPromises);
-
-      setData(charactersWithData);
-      setisLoading(false);
-      setTotalPages(Math.ceil(response.data.count / charactersPerPage));
-    } catch (err) {
-      setError(err);
-      setisLoading(false);
+        return Promise.all(characterPromises);
+      }
+      return [];
+    },
+    {
+      enabled: !!characterData, // Only fetch homeworldData if characterData is available
     }
-  };
+  );
+  const {
+    // isLoading: loadingSpecies,
+    // error: errorSpecies,
+    data: speciesData,
+  } = useQuery(
+    ["species"],
+    () => {
+      if (characterData && characterData.results) {
+        const characterPromises = characterData.results.map((char) => {
+          if (char.species.length > 0) {
+            return axios.get(char.species[0]).then((res) => res.data);
+          }
+          // If no species, return an empty object
+          return {};
+        });
 
-  useEffect(() => {
-    getData(currentPage);
-  }, [currentPage]);
+        return Promise.all(characterPromises);
+      }
+      return [];
+    },
+    {
+      enabled: !!characterData, // Only fetch homeworldData if characterData is available
+    }
+  );
+
+  if (loadingCharacters) return "Loading Characters...";
+  if (charactersError)
+    return "An error has occurred: " + charactersError.message;
+
+  if (loadingHomeworlds) return "Loading Homeworlds...";
+  if (errorHomeworlds)
+    return "An error has occurred: " + errorHomeworlds.message;
+
+  const charactersWithHomeworlds = characterData.results.map((char, index) => ({
+    ...char,
+    homeworld: homeworldData[index],
+    species: speciesData[index], // Associate character with homeworld
+  }));
+  const totalPages = Math.ceil(characterData?.count / charactersPerPage);
 
   const handleCardClick = (character) => {
     setSelectedCharacter(character);
   };
-
-  console.log("selectedCharacter", totalPages);
-  if (isloading) {
-    return <div>Loading...</div>;
+  console.log(charactersWithHomeworlds);
+  //Handle Search
+  function searchCharacters(dataa, searchText) {
+    return dataa.filter((character) =>
+      character.name.toLowerCase().includes(searchText.toLowerCase())
+    );
   }
 
-  if (error) {
-    return <div>Error: {error.message}</div>;
-  }
+  const searchResults = searchCharacters(charactersWithHomeworlds, searchQuery);
 
   return (
     <div>
       <h1>Star Wars Characters</h1>
-
-      <div class="grid-container">
-        {data.map((character) => (
+      <input
+        type="text"
+        placeholder="Search by character name..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
+      <div className="grid-container">
+        {searchResults.map((character) => (
           <div
             key={character.name}
-            class="grid-item"
+            className="grid-item"
             onClick={() => handleCardClick(character)}
           >
             {character.name}
