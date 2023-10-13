@@ -1,0 +1,28 @@
+.filter-container {
+  background-color: #f0f0f0;
+  padding: 20px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.search-container {
+  margin-bottom: 10px;
+}
+
+.filter-options {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+select,
+input[type="text"] {
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-size: 14px;
+}
+
+input[type="text"] {
+  width: 200px;
+}
