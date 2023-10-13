@@ -4,11 +4,15 @@ import Pagination from "./Pagiantion";
 import "../../src/App.css";
 import CharacterModal from "./Modals/CharacterModal";
 import { useQuery } from "@tanstack/react-query";
+import FilterCharacters from "./searchAndFilter/FilterCharacters";
+import FilteringComponent from "./searchAndFilter/FilteringComponent";
 
 const Characters = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCharacter, setSelectedCharacter] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [filterType, setFilterType] = useState("name");
+  const [filterValue, setFilterValue] = useState("");
   const charactersPerPage = 10;
 
   const {
@@ -93,36 +97,28 @@ const Characters = () => {
   const handleCardClick = (character) => {
     setSelectedCharacter(character);
   };
-  console.log(charactersWithHomeworlds);
-  //Handle Search
-  function searchCharacters(dataa, searchText) {
-    return dataa.filter((character) =>
-      character.name.toLowerCase().includes(searchText.toLowerCase())
-    );
-  }
-
-  const searchResults = searchCharacters(charactersWithHomeworlds, searchQuery);
 
   return (
     <div>
-      <h1>Star Wars Characters</h1>
-      <input
-        type="text"
-        placeholder="Search by character name..."
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
+      {/* <h1>Star Wars Characters</h1> */}
+
+      <FilteringComponent
+        searchQuery={searchQuery}
+        filterType={filterType}
+        filterValue={filterValue}
+        onSearchChange={(e) => setSearchQuery(e.target.value)}
+        onFilterTypeChange={(e) => setFilterType(e.target.value)}
+        onFilterValueChange={(e) => setFilterValue(e.target.value)}
       />
-      <div className="grid-container">
-        {searchResults.map((character) => (
-          <div
-            key={character.name}
-            className="grid-item"
-            onClick={() => handleCardClick(character)}
-          >
-            {character.name}
-          </div>
-        ))}
-      </div>
+
+      <FilterCharacters
+        characters={charactersWithHomeworlds || []}
+        filterType={filterType}
+        filterValue={filterValue}
+        searchQuery={searchQuery}
+        onCardClick={handleCardClick}
+      />
+
       <Pagination
         totalPages={totalPages}
         setCurrentPage={setCurrentPage}
