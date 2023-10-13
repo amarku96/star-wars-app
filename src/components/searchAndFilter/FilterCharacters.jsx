@@ -45,7 +45,6 @@ function FilterCharacters({
   const searchFilteredCharacters = filteredCharacters.filter((character) =>
     character.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  console.log(searchFilteredCharacters);
   return (
     <div className="grid-container">
       {searchFilteredCharacters.map((character) => (
