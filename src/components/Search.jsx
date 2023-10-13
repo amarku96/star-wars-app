@@ -1,11 +1,21 @@
-const Search = ()=>{
+import { useState } from "react";
 
-return(
+const Search = (charactersData) => {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Load charactersData from API or other source
+
+  return (
     <>
-<p>Find Star Wars characters</p>
-    <input></input></>
+      <p>Find Star Wars characters</p>
+      <input
+        type="text"
+        placeholder="Search by character name..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
+    </>
+  );
+};
 
-)
-}
-
-export default Search
+export default Search;
