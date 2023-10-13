@@ -100,8 +100,6 @@ const Characters = () => {
 
   return (
     <div>
-      {/* <h1>Star Wars Characters</h1> */}
-
       <FilteringComponent
         searchQuery={searchQuery}
         filterType={filterType}

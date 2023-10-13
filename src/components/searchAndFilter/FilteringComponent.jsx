@@ -11,7 +11,6 @@ function FilteringComponent({
 }) {
   return (
     <div className="filter-container">
-      <h1>Star Wars Characters</h1>
       <div className="search-container">
         <input
           type="text"

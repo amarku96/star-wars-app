@@ -1,4 +1,5 @@
 import React from "react";
+import "../../App.css";
 
 function FilterCharacters({
   characters,
@@ -21,14 +22,14 @@ function FilterCharacters({
         //   );
         case "species":
           if (character.species) {
-            return false; // No species data, exclude from results
+            return false;
           } else {
             return character.species.name
               .toLowerCase()
               .includes(filterValue.toLowerCase());
           }
         default:
-          return true; // No filter or unknown filter type
+          return true;
       }
     });
   };
