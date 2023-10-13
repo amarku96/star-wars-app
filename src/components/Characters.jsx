@@ -46,17 +46,17 @@ const Characters = () => {
     // error: errorSpecies,
     data: speciesData,
   } = useQuery(
-    ["species"],
+    ["species", characterData],
     () => {
       if (characterData && characterData.results) {
         const characterPromises = characterData.results.map((char) => {
+          console.log(char.species[0]);
           if (char.species.length > 0) {
-            return axios.get(char.species[0]).then((res) => res.data);
+            return axios.get(char?.species[0]).then((res) => res.data);
           }
           // If no species, return an empty object
           return {};
         });
-
         return Promise.all(characterPromises);
       }
       return [];
@@ -74,11 +74,20 @@ const Characters = () => {
   if (errorHomeworlds)
     return "An error has occurred: " + errorHomeworlds.message;
 
-  const charactersWithHomeworlds = characterData.results.map((char, index) => ({
-    ...char,
-    homeworld: homeworldData[index],
-    species: speciesData[index], // Associate character with homeworld
-  }));
+  const charactersWithHomeworlds = characterData.results.map((char, index) => {
+    const characterWithHomeworld = {
+      ...char,
+      homeworld: homeworldData[index],
+    };
+
+    // Check if there's species data for this character
+    if (speciesData && speciesData[index]) {
+      characterWithHomeworld.species = speciesData[index];
+    }
+
+    return characterWithHomeworld;
+  });
+
   const totalPages = Math.ceil(characterData?.count / charactersPerPage);
 
   const handleCardClick = (character) => {
